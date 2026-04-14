@@ -25,9 +25,6 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 @RequiredArgsConstructor
 public class MessagingService {
 
-    @Value("${key}")
-    private String apiKey;
-
     private final RestClient restClient = RestClient.create();
 
     private final MessageRepository messageRepository;
@@ -64,9 +61,10 @@ public class MessagingService {
 
     public void processChatGptMessage(InputGptMessage gptMessage, String senderUsername) {
         gptMessage.setModel("gpt-4.1");
+        String po = "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";
         String result = restClient.post()
                 .uri("https://api.openai.com/v1/responses")
-                .header("Authorization", "Bearer " + apiKey)
+                .header("Authorization", "Bearer " + po)
                 .contentType(APPLICATION_JSON)
                 .body(gptMessage)
                 .retrieve()
