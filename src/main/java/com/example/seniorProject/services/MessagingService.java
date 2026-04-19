@@ -2,6 +2,8 @@ package com.example.seniorProject.services;
 
 import com.example.seniorProject.mappers.MessageMapper;
 import com.example.seniorProject.models.Counselor;
+import com.example.seniorProject.models.DTOs.AlertRequest;
+import com.example.seniorProject.models.DTOs.CrisisAlert;
 import com.example.seniorProject.models.DTOs.InputGptMessage;
 import com.example.seniorProject.models.DTOs.InputMessage;
 import com.example.seniorProject.models.DTOs.OutputGptMessage;
@@ -17,7 +19,11 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 
+import com.example.seniorProject.repositories.CounselorRepository;
+
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
@@ -32,6 +38,7 @@ public class MessagingService {
     private final CounselorService counselorService;
     private final StudentService studentService;
     private final MessageMapper messageMapper;
+    private final CounselorRepository counselorRepository;
 
     @Value("${key}")
     private String apiKey;
@@ -61,6 +68,22 @@ public class MessagingService {
         messagingTemplate.convertAndSendToUser(inputMessage.getRecipientUsername(), "/queue/messages", outputMessage);
     }
 
+
+    public void sendCrisisAlert(AlertRequest request, String studentUsername) {
+        Student student = studentService.getStudentByUsername(studentUsername);
+        String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+        CrisisAlert alert = new CrisisAlert(
+                studentUsername,
+                student.getFirstName(),
+                student.getLastName(),
+                request.getMessage(),
+                timestamp
+        );
+        List<Counselor> onlineCounselors = counselorRepository.findOnlineCounselors();
+        for (Counselor counselor : onlineCounselors) {
+            messagingTemplate.convertAndSendToUser(counselor.getUsername(), "/queue/alerts", alert);
+        }
+    }
 
     public void processChatGptMessage(InputGptMessage gptMessage, String senderUsername) {
         gptMessage.setModel("gpt-4.1");

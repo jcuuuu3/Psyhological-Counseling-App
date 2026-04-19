@@ -21,4 +21,7 @@ public interface CounselorRepository extends JpaRepository<Counselor, Integer> {
     List<Session> clashingSessions(int counselorId, String roomId, LocalDateTime lower, LocalDateTime upper);
 
     Optional<Counselor> findByUsername(String e);
+
+    @Query("SELECT c FROM Counselor c WHERE c.isOnline = true")
+    List<Counselor> findOnlineCounselors();
 }

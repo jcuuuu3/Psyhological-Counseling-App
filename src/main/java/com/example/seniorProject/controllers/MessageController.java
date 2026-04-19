@@ -1,5 +1,6 @@
 package com.example.seniorProject.controllers;
 
+import com.example.seniorProject.models.DTOs.AlertRequest;
 import com.example.seniorProject.models.DTOs.InputGptMessage;
 import com.example.seniorProject.models.DTOs.InputMessage;
 import com.example.seniorProject.services.MessagingService;
@@ -24,5 +25,10 @@ public class MessageController {
     @MessageMapping("/gpt")
     public void incomingMessageToGpt(InputGptMessage inputGptMessage, Authentication authentication) {
         messagingService.processChatGptMessage(inputGptMessage, authentication.getName());
+    }
+
+    @MessageMapping("/alert")
+    public void crisisAlert(AlertRequest alertRequest, Authentication authentication) {
+        messagingService.sendCrisisAlert(alertRequest, authentication.getName());
     }
 }
